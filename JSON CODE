@@ -1,0 +1,313 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "incident-webhook",
+        "options": {}
+      },
+      "id": "a09d09eb-6d37-4023-87b7-21fbfd53a89f",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        384,
+        0
+      ],
+      "webhookId": "f1e2d3c4-b5a6-9876-c9d0-e1f2a3b4c5d6"
+    },
+    {
+      "parameters": {},
+      "id": "907d33ee-a8c8-45c2-9803-da2e4f7b8714",
+      "name": "Cron Trigger (Check Systems)",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        384,
+        208
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "c30e6b62-5166-4d3e-93a7-fe532fbf8a1e",
+      "name": "Code (Parse & Standardize)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        624,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "YOUR_GOOGLE_SHEET_ID",
+        "sheetName": "Incidents",
+        "options": {}
+      },
+      "id": "e59030cc-18b0-4545-9272-00065d12534d",
+      "name": "Google Sheets (Log Incident)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        864,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.priority }}",
+              "value2": "high"
+            }
+          ]
+        }
+      },
+      "id": "c0f05d03-ce85-460e-8afe-d0ddc565b42e",
+      "name": "Check Priority: High?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "text": "🚨 *High Priority Incident Reported* 🚨\n*Title:* {{ $json.title }}\n*Details:* {{ $json.details }}\n*Source:* {{ $json.source }}",
+        "otherOptions": {}
+      },
+      "id": "58c0bcc2-3ba4-4a1c-9567-a52105395d30",
+      "name": "Send Slack Alert (Team)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        0
+      ],
+      "webhookId": "2acca33a-ec92-4ab3-ab88-994b71882237"
+    },
+    {
+      "parameters": {
+        "subject": "[HIGH PRIORITY] Incident: {{ $json.title }}",
+        "options": {}
+      },
+      "id": "b427bec3-39b0-41a4-9f68-731d6403a384",
+      "name": "Send Email Alert (Team)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        208
+      ],
+      "webhookId": "1b80fdb2-45d6-43b6-9a50-67d850b55a3d"
+    },
+    {
+      "parameters": {
+        "unit": "minutes"
+      },
+      "id": "575110fb-d1a6-4a13-aea0-a69222397faf",
+      "name": "Wait 15 mins for ack",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        0
+      ],
+      "webhookId": "b1e1ddd8-9304-4b10-8348-ad56b63d7a00"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "text": "🔥 *ESCALATION* 🔥\nAn unacknowledged high-priority incident requires your attention.\n*Title:* {{ $json.title }}\n*Details:* {{ $json.details }}",
+        "otherOptions": {}
+      },
+      "id": "e463e4fb-85a8-45a3-a921-92b3a8702a67",
+      "name": "Send Slack Alert (Escalation)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        0
+      ],
+      "webhookId": "88dd2199-1d6c-44c2-8393-645801eacfd4"
+    },
+    {
+      "parameters": {
+        "subject": "[ESCALATION] Incident: {{ $json.title }}",
+        "options": {}
+      },
+      "id": "47ecc78f-5069-46df-9fc0-d1010df329b4",
+      "name": "Send Email Alert (Escalation)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        1824,
+        208
+      ],
+      "webhookId": "60448e96-a826-4428-af15-00d81f23a5db"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.source }}",
+              "value2": "Webhook"
+            }
+          ]
+        }
+      },
+      "id": "4cb2c2e7-eeb3-485e-9ba1-92161ace0136",
+      "name": "IF (Was Webhook?)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e1cb63c7-2ef2-414a-8ccf-4544e1ff4015",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2304,
+        112
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code (Parse & Standardize)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron Trigger (Check Systems)": {
+      "main": [
+        [
+          {
+            "node": "Code (Parse & Standardize)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code (Parse & Standardize)": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets (Log Incident)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets (Log Incident)": {
+      "main": [
+        [
+          {
+            "node": "Check Priority: High?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Priority: High?": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert (Team)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Email Alert (Team)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack Alert (Team)": {
+      "main": [
+        [
+          {
+            "node": "Wait 15 mins for ack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15 mins for ack": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert (Escalation)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Email Alert (Escalation)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Slack Alert (Escalation)": {
+      "main": [
+        [
+          {
+            "node": "IF (Was Webhook?)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Alert (Escalation)": {
+      "main": [
+        [
+          {
+            "node": "IF (Was Webhook?)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF (Was Webhook?)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "fa03343c1ad827bf78143faea3ee47645007aa07b8f1ec88f13f49e8879759fa"
+  }
+}
